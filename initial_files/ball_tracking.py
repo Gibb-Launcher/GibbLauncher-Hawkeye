@@ -25,7 +25,7 @@ args = vars(ap.parse_args())
  list of tracked points
 """
 #Lower and upper boundaries
-greenLower = (10, 100, 20)
+greenLower = (10, 100, 150)
 greenUpper = (25, 255, 255)
 
 # List of all points (x,y)
@@ -42,6 +42,9 @@ else:
 
 # Allow the camera or video file to warm up
 time.sleep(2.0)
+
+bateu = 0
+mudou = False
 
 # Keep looping until user kill process(ctrl+c)
 while True:
@@ -96,8 +99,8 @@ while True:
 
     # update the points queue
     pts.appendleft(center)
-    print(center) # PRINT POINT TRACKED 
-
+    # print(center) # PRINT POINT TRACKED 
+    
     # loop over the set of tracked points
     for i in range(1, len(pts)):
         # if either of the tracked points are None, ignore
@@ -108,7 +111,18 @@ while True:
         # otherwise, compute the thickness of the line and
         # draw the connecting lines
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-        cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
+        cv2.line(frame, pts[i - 1], pts[i], (0, 255, 255), thickness)
+
+    if(len(pts) > 5):
+        A = pts[4]
+        B = pts[3]
+        C = pts[2]
+        D = pts[1]
+        E = pts[0]
+        if(A and B and C and D and E):
+            if A[1] <= B[1] and B[1] <= C[1] and C[1] >= D[1] and D[1] >= E[1]:
+                cv2.line(frame, C, D, (0, 0, 0), 50)
+                print("Quicou em {}".format(C))
 
     # show the frame to our screen
     cv2.imshow("Frame", frame)
