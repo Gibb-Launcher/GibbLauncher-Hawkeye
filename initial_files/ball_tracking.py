@@ -122,7 +122,9 @@ while True:
         if(A and B and C and D and E):
             if A[1] <= B[1] and B[1] <= C[1] and C[1] >= D[1] and D[1] >= E[1]:
                 cv2.line(frame, C, D, (0, 0, 0), 50)
-                print("Quicou em {}".format(C))
+                if C[1] > 190:
+                    print("Quicou em {}".format(C))
+
 
     # show the frame to our screen
     cv2.imshow("Frame", frame)
