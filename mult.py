@@ -47,7 +47,7 @@ def training():
     return classifier_linear
 
 
-video_path = '../Videos/video10.h264'
+video_path = '../Videos/video17.h264'
 cv2.ocl.setUseOpenCL(False)
 
 # version = cv2.__version__.split('.')[0]
@@ -69,6 +69,8 @@ kernel = np.ones((5, 5), np.uint8)
 
 image_number = 1
 classifier_linear = training()
+timestamp = 0
+array_test = []
 while (True):
 
     # if ret is true than no error with cap.isOpened
@@ -124,18 +126,18 @@ while (True):
             crop_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
             prediction = classifier_linear.predict(crop_img.reshape(1, -1))
 
-            if(prediction.item() == 0):
-                continue
+            # if(prediction.item() == 0):
+            #     continue
 
             M = cv2.moments(contour)
 
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             np.append(centers, center)
-
+            array_test.append([center[0], center[1], timestamp])
             cv2.circle(frame, center, 15, (0, 255, 0), 2)
             epsilon = 0.01* cv2.arcLength(contour,True)
-            approx = cv2.approxPolyDP(contour,epsilon,True)
-            cv2.drawContours(frame, [approx], -1, (0, 255, 0), 4)
+            # approx = cv2.approxPolyDP(contour,epsilon,True)
+            # cv2.drawContours(frame, [approx], -1, (0, 255, 0), 4)
             
 
             # cv2.imshow("cropped", crop_img)
@@ -158,7 +160,9 @@ while (True):
         cv2.imshow('foreground and background', frameRemoveShadow)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+        timestamp += 1
 
+print(array_test)
 
 cap.release()
 cv2.destroyAllWindows()
