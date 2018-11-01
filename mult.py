@@ -190,7 +190,7 @@ while (True):
         fgmask = cv2.morphologyEx(
             fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)))
         fgmask = cv2.dilate(fgmask, kernel, iterations=3)
-        # fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
+        fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
 
         fgmask = fgbg.apply(fgmask)
 
