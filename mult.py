@@ -149,7 +149,7 @@ def training():
     return classifier_linear
 
 
-video_path = '../Dia23/video007.h264'
+video_path = '../Dia23/video006.h264'
 cv2.ocl.setUseOpenCL(False)
 
 # version = cv2.__version__.split('.')[0]
