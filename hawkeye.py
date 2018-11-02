@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 import candidate
 
 
-def check_movement(shadow_frame, frame, balls_traking):
+def check_movement(shadow_frame, frame, balls_traking, timestamp):
     (im2, contours, hierarchy) = cv2.findContours(
         shadow_frame.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -41,59 +41,66 @@ def check_movement(shadow_frame, frame, balls_traking):
             [np.array([candidates[0][0], candidates[0][1], candidates[0][2]])]), axis=0)
 
     for point in points:
-        cv2.circle(frame,(int(point[0]), int(point[1])),4,255,5)
+        cv2.circle(frame, (int(point[0]), int(point[1])), 4, 255, 5)
         balls_traking.append([int(point[0]), int(point[1]), int(point[2])])
 
 
-video_path = '../Dia23/video001.h264'
+def analize_video():
+    video_path = '../Dia23/video001.h264'
 
-# read video file
-cap = cv2.VideoCapture(video_path)
+    # read video file
+    cap = cv2.VideoCapture(video_path)
 
-fgbg = cv2.createBackgroundSubtractorKNN(history=1)
-centers = np.array([])
+    fgbg = cv2.createBackgroundSubtractorKNN(history=1)
+    centers = np.array([])
 
-m = (800.0 - 549.0) / (541.0 - 387.0)
-number_frame = 0
-kernel = np.ones((5, 5), np.uint8)
+    m = (800.0 - 549.0) / (541.0 - 387.0)
+    number_frame = 0
+    kernel = np.ones((5, 5), np.uint8)
 
-crop_number = 1
-timestamp = 0
-candidates = []
-while (True):
+    crop_number = 1
+    timestamp = 0
+    candidates = []
+    while (True):
 
-    ret, frame = cap.read()
-    number_frame += 1
+        ret, frame = cap.read()
+        number_frame += 1
 
-    if frame is None:
-        break
-    if ret == True:
-        frame = imutils.resize(frame, width=800, height=600)
-        fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
-
-        fgmask = cv2.morphologyEx(
-            fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)))
-        fgmask = cv2.dilate(fgmask, kernel, iterations=3)
-        fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
-
-        fgmask = fgbg.apply(fgmask)
-
-        intensity, frameRemoveShadow = cv2.threshold(
-            fgmask, 0, 255, cv2.THRESH_BINARY)
-
-        check_movement(frameRemoveShadow, frame, candidates)
- 
-        cv2.imshow('foreground and background', frameRemoveShadow)
-        cv2.imshow('rgb', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if frame is None:
             break
+        if ret == True:
+            frame = imutils.resize(frame, width=800, height=600)
+            fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
 
-        timestamp += 1
+            fgmask = cv2.morphologyEx(
+                fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)))
+            fgmask = cv2.dilate(fgmask, kernel, iterations=3)
+            fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
 
-print(timestamp)
-print(candidates, len(candidates))
-print(candidate.start_verification(candidates))
+            fgmask = fgbg.apply(fgmask)
 
-cap.release()
-cv2.destroyAllWindows()
+            intensity, frameRemoveShadow = cv2.threshold(
+                fgmask, 0, 255, cv2.THRESH_BINARY)
+
+            check_movement(frameRemoveShadow, frame, candidates, timestamp)
+
+            cv2.imshow('foreground and background', frameRemoveShadow)
+            cv2.imshow('rgb', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+            timestamp += 1
+
+    cap.release()
+    cv2.destroyAllWindows()
+    return candidate.start_verification(candidates)
+
+
+if __name__ == '__main__':
+    candidate = analize_video()
+    if candidate is not None:
+        print("O candidato esta no frame :{}.\nEle é: {}".format(
+            candidate[0][0], candidate[0][1]))
+    else:
+        print("Provavelmente não houve quique!")
