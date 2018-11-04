@@ -45,9 +45,7 @@ def check_movement(shadow_frame, frame, balls_traking, timestamp):
         balls_traking.append([int(point[0]), int(point[1]), int(point[2])])
 
 
-def analize_video():
-    video_path = '../Dia23/video001.h264'
-
+def analize_video(video_path):
     # read video file
     cap = cv2.VideoCapture(video_path)
 
@@ -98,7 +96,7 @@ def analize_video():
 
 
 if __name__ == '__main__':
-    candidate = analize_video()
+    candidate = analize_video('../Dia23/video001.h264')
     if candidate is not None:
         print("O candidato esta no frame :{}.\nEle é: {}".format(
             candidate[0][0], candidate[0][1]))

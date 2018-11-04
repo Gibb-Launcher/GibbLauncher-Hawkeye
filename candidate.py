@@ -7,7 +7,6 @@ ESQUERDA = 0
 CIMA = 1
 BAIXO = 0
 
-
 class Candidate():
     def __init__(self, data, noise=True):
         self.data = data
