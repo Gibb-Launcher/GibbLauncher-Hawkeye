@@ -13,11 +13,11 @@ def check_movement(shadow_frame, frame, balls_traking, timestamp):
 
     candidates = np.empty((0, 3))
     for contour in contours:
-        if cv2.contourArea(contour) < 20 and cv2.contourArea(contour) < 50:
+        if cv2.contourArea(contour) < 20:
             continue
 
         M = cv2.moments(contour)
-        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) #aqui
         candidates = np.append(candidates, np.array(
             [np.array([int(center[0]), int(center[1]), int(timestamp)])]), axis=0)
 
@@ -96,7 +96,7 @@ def analize_video(video_path):
 
 
 if __name__ == '__main__':
-    candidate = analize_video('../Dia23/video001.h264')
+    candidate = analize_video('videos/video002.h264')
     if candidate is not None:
         print("O candidato esta no frame :{}.\nEle é: {}".format(
             candidate[0][0], candidate[0][1]))
