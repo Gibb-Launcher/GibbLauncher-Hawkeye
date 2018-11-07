@@ -120,10 +120,10 @@ if __name__ == '__main__':
     candidate = analize_video('videos/video002.h264')
     if candidate is not None:
         #print("O candidato esta no frame :{}.\nEle é: {}".format(candidate[0][0], candidate[0][1]))
-        bounce_x = candidate[0][1][0][1]
-        bounce_y = candidate[0][1][0][2]
-        
-        point = map_homography_point(197,427)
-        print(point)
+        bounce_x = float(candidate[0][1][0][0])
+        bounce_y = float(candidate[0][1][0][1])
+
+        homography_point = map_homography_point(bounce_x,bounce_y)
+        print(homography_point)
     else:
         print("Provavelmente não houve quique!")
