@@ -3,6 +3,7 @@ import cv2
 import sys
 import imutils
 import time
+import math
 from sklearn.svm import SVC
 import candidate
 
@@ -95,10 +96,34 @@ def analize_video(video_path):
     return candidate.start_verification(candidates)
 
 
+def map_homography_point(bounce_x,bounce_y):
+    pts1 = np.float32([[219, 351], [545, 365], [10, 490], [793, 512]])
+    pts2 = np.float32([[0, 0], [800, 0], [0, 600], [800, 600]])
+
+    # Ambos dão o mesmo resultado
+    matrixH = cv2.getPerspectiveTransform(pts1, pts2)
+    bounce_coord = np.array( [ [float(bounce_x)],[float(bounce_y)],[1.0] ] ) 
+
+    xa = matrixH
+    xb = bounce_coord
+
+    # Calculate resulting matrix. resulting_matrix (1x3) = matrixH(3x3) * bounce_coord(1x3)
+    resulting_matrix = xa.dot(xb)
+    xx = (resulting_matrix[0][0]/resulting_matrix[2][0])
+    yy = (resulting_matrix[1][0]/resulting_matrix[2][0])
+
+    homography_coord = [xx,yy]
+    return homography_coord
+
+
 if __name__ == '__main__':
     candidate = analize_video('videos/video002.h264')
     if candidate is not None:
-        print("O candidato esta no frame :{}.\nEle é: {}".format(
-            candidate[0][0], candidate[0][1]))
+        #print("O candidato esta no frame :{}.\nEle é: {}".format(candidate[0][0], candidate[0][1]))
+        bounce_x = candidate[0][1][0][1]
+        bounce_y = candidate[0][1][0][2]
+        
+        point = map_homography_point(197,427)
+        print(point)
     else:
         print("Provavelmente não houve quique!")
