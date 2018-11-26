@@ -5,6 +5,7 @@ import imutils
 import time
 from sklearn.svm import SVC
 import candidate
+from threading import Thread
 
 
 def check_movement(shadow_frame, frame, balls_traking, timestamp):
@@ -17,7 +18,7 @@ def check_movement(shadow_frame, frame, balls_traking, timestamp):
             continue
 
         M = cv2.moments(contour)
-        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) #aqui
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))  # aqui
         candidates = np.append(candidates, np.array(
             [np.array([int(center[0]), int(center[1]), int(timestamp)])]), axis=0)
 
@@ -45,60 +46,82 @@ def check_movement(shadow_frame, frame, balls_traking, timestamp):
         balls_traking.append([int(point[0]), int(point[1]), int(point[2])])
 
 
-def analize_video(video_path):
-    # read video file
-    cap = cv2.VideoCapture(video_path)
+class AnalizeVideo(Thread):
+    def __init__(self, video_path):
+        self.candidate = None
+        self.video_path = video_path
+        super(AnalizeVideo, self).__init__()
 
-    fgbg = cv2.createBackgroundSubtractorKNN(history=1)
-    centers = np.array([])
+    def run(self):
+        self.candidate = self.analize_video()
 
-    m = (800.0 - 549.0) / (541.0 - 387.0)
-    number_frame = 0
-    kernel = np.ones((5, 5), np.uint8)
+        if self.candidate is not None:
+            print("O candidato esta no frame :{}.\nEle é: {}".format(
+                self.candidate[0][0], self.candidate[0][1]))
+        else:
+            print("Provavelmente não houve quique!")
 
-    crop_number = 1
-    timestamp = 0
-    candidates = []
-    while (True):
+    def analize_video(self):
+        # read video file
+        cap = cv2.VideoCapture(self.video_path)
 
-        ret, frame = cap.read()
-        number_frame += 1
+        fgbg = cv2.createBackgroundSubtractorKNN(history=1)
+        centers = np.array([])
 
-        if frame is None:
-            break
-        if ret == True:
-            frame = imutils.resize(frame, width=800, height=600)
-            fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
+        m = (800.0 - 549.0) / (541.0 - 387.0)
+        number_frame = 0
+        kernel = np.ones((5, 5), np.uint8)
 
-            fgmask = cv2.morphologyEx(
-                fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)))
-            fgmask = cv2.dilate(fgmask, kernel, iterations=3)
-            fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
+        crop_number = 1
+        timestamp = 0
+        candidates = []
+        while (True):
 
-            fgmask = fgbg.apply(fgmask)
+            ret, frame = cap.read()
+            number_frame += 1
 
-            intensity, frameRemoveShadow = cv2.threshold(
-                fgmask, 0, 255, cv2.THRESH_BINARY)
-
-            check_movement(frameRemoveShadow, frame, candidates, timestamp)
-
-            cv2.imshow('foreground and background', frameRemoveShadow)
-            cv2.imshow('rgb', frame)
-
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            if frame is None:
                 break
+            if ret == True:
+                frame = imutils.resize(frame, width=800, height=600)
+                fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
 
-            timestamp += 1
+                fgmask = cv2.morphologyEx(
+                    fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)))
+                fgmask = cv2.dilate(fgmask, kernel, iterations=3)
+                fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_ERODE, kernel)
 
-    cap.release()
-    cv2.destroyAllWindows()
-    return candidate.start_verification(candidates)
+                fgmask = fgbg.apply(fgmask)
 
+                intensity, frameRemoveShadow = cv2.threshold(
+                    fgmask, 0, 255, cv2.THRESH_BINARY)
+
+                check_movement(frameRemoveShadow, frame, candidates, timestamp)
+
+                # cv2.imshow('foreground and background', frameRemoveShadow)
+                # cv2.imshow('rgb', frame)
+
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+
+                timestamp += 1
+
+        cap.release()
+        cv2.destroyAllWindows()
+        return candidate.start_verification(candidates)
+
+
+def analize_all_videos():
+    thread_list = []
+
+    for i in range(1, 10):
+        thread_list.append(AnalizeVideo('../Dia23/video00{}.h264'.format(i)))
+    
+    for index, thread in enumerate(thread_list):
+        thread.start()
+
+    for index, thread in enumerate(thread_list):
+        thread.join()
 
 if __name__ == '__main__':
-    candidate = analize_video('videos/video002.h264')
-    if candidate is not None:
-        print("O candidato esta no frame :{}.\nEle é: {}".format(
-            candidate[0][0], candidate[0][1]))
-    else:
-        print("Provavelmente não houve quique!")
+    analize_all_videos()

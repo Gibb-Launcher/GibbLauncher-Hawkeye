@@ -10,7 +10,7 @@ def calc_distance(itemA, itemB):
 
 #cap = cv2.VideoCapture(0)
 # cap = cv2.VideoCapture('../../Documents/PI2/Dia23/video001.h264')
-cap = cv2.VideoCapture('../Dia23/video001.h264')
+cap = cv2.VideoCapture('../Dia23/video002.h264')
 
 count = 0
 
@@ -54,9 +54,9 @@ while True:
         # print('=========')
         # Duas Maneiras de representar o ponto do quique do video 2
         # video 001
-        ponto_quique = np.array( [ [457.0],[379.0],[1.0] ] ) 
+        # ponto_quique = np.array( [ [457.0],[379.0],[1.0] ] ) 
         # video 002
-        # ponto_quique = np.array( [ [197.0],[427.0],[1.0] ] ) 
+        ponto_quique = np.array( [ [197.0],[427.0],[1.0] ] ) 
         # video 010
         # ponto_quique = np.array( [ [531.0],[449.0],[1.0] ] ) 
         # ponto_quique = [197.0, 427.0, 1.0 ]
